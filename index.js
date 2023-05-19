@@ -55,16 +55,25 @@ passport.deserializeUser((email, done) => {
 });
 
 passport.use(
-	new LocalStrategy(function (username, password, done) {
+	new LocalStrategy(async function (username, password, done) {
 		const text = 'SELECT * FROM users WHERE username = $1';
 		const value = [username];
 
-		db.query(text, value, (err, res) => {
-			if (err) return done(err);
-			if (!res.rows[0]) return done(null, false);
-			if (res.rows[0].password !== password) return done(null, false);
-			return done(null, res.rows[0]);
-		});
+		// db.query(text, value, (err, res) => {
+		// 	if (err) return done(err);
+		// 	if (!res.rows[0]) return done(null, false);
+		// 	if (res.rows[0].password !== password) return done(null, false);
+		// 	return done(null, res.rows[0]);
+		// });
+
+		try {
+			const resDB = await db.query(text, value);
+			if (!resDB.rows[0]) return done(null, false);
+			if (resDB.rows[0].password !== password) return done(null, false);
+			return done(null, resDB.rows[0]);
+		} catch (err) {
+			return done(err);
+		}
 	})
 );
 
